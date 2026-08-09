@@ -1,0 +1,12 @@
+# SmartBin Dependencies
+
+# Core scientific computing
+numpy>=1.21.0
+
+# Web Dashboard
+Flask>=2.3.0
+requests>=2.28.0
+
+# PDF Generation
+markdown>=3.4.0
+weasyprint>=59.0  # For PDF conversion

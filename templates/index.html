@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrashTrek Dashboard (Nashik)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F9FAFB;
+            color: #111827;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background-color: #FFFFFF;
+            border-right: 1px solid #E5E7EB;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .sidebar-header p {
+            font-size: 14px;
+            color: #6B7280;
+            margin-top: 4px;
+        }
+
+        .sidebar-content {
+            padding: 24px;
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6B7280;
+            margin-bottom: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #111827;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s, color 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background-color: #4F46E5;
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338CA;
+        }
+
+        .btn-secondary {
+            background-color: #FFFFFF;
+            color: #374151;
+            border: 1px solid #D1D5DB;
+        }
+
+        .btn-secondary:hover {
+            background-color: #F9FAFB;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topbar {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            height: 64px;
+            flex-shrink: 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .tab {
+            font-size: 15px;
+            font-weight: 500;
+            color: #6B7280;
+            cursor: pointer;
+            padding: 0 8px;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .tab:hover {
+            color: #111827;
+        }
+
+        .tab.active {
+            color: #4F46E5;
+            border-bottom-color: #4F46E5;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 24px;
+        }
+
+        #mapGrid {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            z-index: 1;
+        }
+
+        /* Distance Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border: 1px solid #E5E7EB;
+            text-align: center;
+        }
+
+        th {
+            background-color: #F9FAFB;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+        }
+
+        th:first-child {
+            position: sticky;
+            left: 0;
+            background-color: #F9FAFB;
+            z-index: 10;
+        }
+        
+        td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: #FFFFFF;
+            font-weight: 500;
+            color: #111827;
+            z-index: 5;
+        }
+
+        /* Results */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #6B7280;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .route-step {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            color: #111827;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 4px;
+        }
+
+        .route-arrow {
+            color: #9CA3AF;
+            margin: 0 4px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            display: none;
+            padding: 40px;
+            text-align: center;
+            color: #6B7280;
+            font-weight: 500;
+        }
+
+        /* Helpers */
+        .mb-2 { margin-bottom: 8px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mt-4 { margin-top: 16px; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>TrashTrek</h1>
+            <p>Waste Routing Optimizer</p>
+        </div>
+        
+        <div class="sidebar-content">
+            <h3 class="section-title">Configuration</h3>
+            <div class="form-group" style="display: none;">
+                <label>Number of Bins</label>
+                <input type="number" id="numBins" value="10" min="1" max="50">
+            </div>
+            <div class="form-group">
+                <label>Truck Capacity (kg)</label>
+                <input type="number" id="truckCapacity" value="200" min="50" max="1000">
+            </div>
+            <div class="form-group">
+                <label>Number of Trucks</label>
+                <input type="number" id="numTrucks" value="1" min="1" max="10">
+            </div>
+            
+            <div class="mb-4">
+                <button class="btn btn-secondary" onclick="generateBins()">Reset Nashik Map</button>
+                <button class="btn btn-secondary" onclick="randomizeBins()">Randomize Bin Weights</button>
+            </div>
+
+            <h3 class="section-title mt-4">Actions</h3>
+            <button class="btn btn-primary" onclick="optimizeRoute()">Optimize Route</button>
+            
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('map')">Bin Map</button>
+                <button class="tab" onclick="switchTab('distances')">Distances Data</button>
+                <button class="tab" onclick="switchTab('results')">Optimization Results</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- MAP TAB -->
+            <div id="tab-map" class="tab-content active">
+                <div class="card">
+                    <h2 class="card-title">Nashik Interactive Bin Map</h2>
+                    <p class="card-description">Click on any bin to edit its garbage weight and fill level manually.</p>
+                    <div id="mapGrid"></div>
+                </div>
+            </div>
+
+            <!-- DISTANCES TAB -->
+            <div id="tab-distances" class="tab-content">
+                <div class="card">
+                    <h2 class="card-title">Distance Matrix (km)</h2>
+                    <p class="card-description">This table shows the real driving distance between each location, powered by OSRM. "Depot/Truck" represents the starting point, and "Dump" is the final destination.</p>
+                    <div class="table-responsive" id="distanceTableContainer">
+                        <!-- Table injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS TAB -->
+            <div id="tab-results" class="tab-content">
+                <div id="loadingIndicator" class="loading">
+                    Optimizing route with real road data... (this might take a few seconds)
+                </div>
+                
+                <div id="resultsPanel" style="display: none;">
+                    <div class="card">
+                        <h2 class="card-title">Optimization Metrics</h2>
+                        <div id="metricsDisplay" class="metric-grid"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="card-title">Optimal Route Details</h2>
+                        <div id="routeDisplay"></div>
+                        <div id="binListDisplay" class="mt-4"></div>
+                    </div>
+                </div>
+                
+                <div id="noResultsPanel">
+                    <div class="card" style="text-align: center; padding: 60px 20px;">
+                        <svg style="width: 48px; height: 48px; color: #9CA3AF; margin: 0 auto 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                        <h3 style="font-size: 16px; font-weight: 500; color: #374151;">No results yet</h3>
+                        <p style="font-size: 14px; color: #6B7280; margin-top: 8px;">Run "Optimize Route" from the sidebar to view the results here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let bins = [];
+        let distanceMatrix = [];
+        let map;
+        let markers = [];
+        let routeLayers = []; // Keep track of drawn routes
+        
+        const depotCoords = { lat: 19.9750, lng: 73.7750 }; // Indira Nagar Depot
+        const dumpCoords = { lat: 19.9650, lng: 73.7650 }; // Dump Site
+        
+        // Clustered coords around Indira Nagar
+        const hardcodedBinCoords = [
+            {lat: 19.9735, lng: 73.7745},
+            {lat: 19.9760, lng: 73.7765},
+            {lat: 19.9720, lng: 73.7730},
+            {lat: 19.9775, lng: 73.7740},
+            {lat: 19.9740, lng: 73.7780},
+            {lat: 19.9785, lng: 73.7725},
+            {lat: 19.9715, lng: 73.7760},
+            {lat: 19.9755, lng: 73.7720},
+            {lat: 19.9765, lng: 73.7785},
+            {lat: 19.9730, lng: 73.7770},
+        ];
+
+        window.onload = function() {
+            initMap();
+            generateBins();
+        };
+        
+        function initMap() {
+            map = L.map('mapGrid').setView([19.9750, 73.7750], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        function generateBins() {
+            bins = [];
+            for (let i = 0; i < 10; i++) {
+                bins.push({
+                    id: i,
+                    weight: 0,
+                    fill_level: 0,
+                    lat: hardcodedBinCoords[i].lat,
+                    lng: hardcodedBinCoords[i].lng
+                });
+            }
+            updateUI();
+        }
+
+        function randomizeBins() {
+            bins.forEach(bin => {
+                bin.weight = Math.floor(Math.random() * 100);
+                bin.fill_level = Math.min(Math.floor((bin.weight / 100) * 100), 100);
+            });
+            updateUI();
+        }
+
+        function updateUI() {
+            renderMap();
+        }
+
+        function updateBinFromPopup(id) {
+            const w = document.getElementById('pw_' + id).value;
+            const bin = bins.find(b => b.id === id);
+            bin.weight = parseInt(w) || 0;
+            bin.fill_level = Math.min(Math.floor((bin.weight / 100) * 100), 100);
+            updateUI();
+        }
+
+        function renderMap(filterIds = null) {
+            // Clear existing markers and routes
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            routeLayers.forEach(l => map.removeLayer(l));
+            routeLayers = [];
+            
+            // Add Depot
+            const depotMarker = L.marker([depotCoords.lat, depotCoords.lng], {
+                icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#4F46E5; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);">🚛 Depot</div>'})
+            }).addTo(map);
+            markers.push(depotMarker);
+            
+            // Add Dump
+            const dumpMarker = L.marker([dumpCoords.lat, dumpCoords.lng], {
+                icon: L.divIcon({className: 'custom-icon', html: '<div style="background:#374151; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);">🏭 Dump</div>'})
+            }).addTo(map);
+            markers.push(dumpMarker);
+            
+            // Add Bins
+            bins.forEach(bin => {
+                let color = "#9CA3AF"; // empty
+                let opacity = 1.0;
+                
+                if (filterIds !== null && !filterIds.includes(bin.id)) {
+                    opacity = 0.4; // Faded out for reference
+                }
+                
+                if (bin.weight > 0) {
+                    if (bin.fill_level < 50) color = "#10B981"; // green
+                    else if (bin.fill_level < 80) color = "#F59E0B"; // orange
+                    else color = "#EF4444"; // red
+                }
+                
+                const marker = L.circleMarker([bin.lat, bin.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 2,
+                    opacity: opacity,
+                    fillOpacity: opacity
+                }).addTo(map);
+                
+                const popupContent = `
+                    <div style="font-family:Inter; min-width:150px;">
+                        <h4 style="margin-bottom:8px; font-size:16px;">Bin ${bin.id}</h4>
+                        <div style="margin-bottom:8px;">
+                            <label style="font-size:12px; color:#6B7280; display:block;">Weight (kg)</label>
+                            <input type="number" id="pw_${bin.id}" value="${bin.weight}" style="width:100%; padding:6px; border:1px solid #D1D5DB; border-radius:4px;">
+                        </div>
+                        <button onclick="updateBinFromPopup(${bin.id})" style="width:100%; padding:6px; background:#4F46E5; color:white; border:none; border-radius:4px; cursor:pointer;">Save</button>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+        }
+
+        function renderDistanceTable() {
+            const container = document.getElementById('distanceTableContainer');
+            if (!distanceMatrix || distanceMatrix.length === 0) {
+                container.innerHTML = "<p>Distance matrix will appear here after optimizing (fetched from OSRM).</p>";
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Location</th>';
+            const numBins = bins.length;
+            
+            html += '<th>Depot / Truck</th>';
+            for (let i = 0; i < numBins; i++) {
+                html += `<th>Bin ${i}</th>`;
+            }
+            html += '<th>Dump</th></tr></thead><tbody>';
+
+            const labels = ['Depot / Truck', ...bins.map(b => `Bin ${b.id}`), 'Dump'];
+
+            for (let i = 0; i < distanceMatrix.length; i++) {
+                html += `<tr><td>${labels[i]}</td>`;
+                for (let j = 0; j < distanceMatrix[i].length; j++) {
+                    if (i === j) {
+                        html += '<td style="color: #9CA3AF;">-</td>';
+                    } else {
+                        html += `<td>${distanceMatrix[i][j]}</td>`;
+                    }
+                }
+                html += '</tr>';
+            }
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function optimizeRoute() {
+            const truckCapacity = parseInt(document.getElementById('truckCapacity').value);
+            const numTrucks = parseInt(document.getElementById('numTrucks').value);
+            
+            switchTab('results');
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('resultsPanel').style.display = 'none';
+            document.getElementById('noResultsPanel').style.display = 'none';
+            
+            // Build coordinates array (Depot, Bins 1..N, Dump)
+            let allCoords = [depotCoords, ...bins.map(b => ({lat: b.lat, lng: b.lng})), dumpCoords];
+            
+            try {
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bins, 
+                        truck_capacity: truckCapacity, 
+                        num_trucks: numTrucks, 
+                        coordinates: allCoords
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    optimizationResults = result;
+                    if(result.distance_matrix) {
+                        distanceMatrix = result.distance_matrix;
+                        renderDistanceTable();
+                    }
+                    displayResults(result);
+                } else {
+                    alert('Error: ' + result.error);
+                    document.getElementById('noResultsPanel').style.display = 'block';
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('noResultsPanel').style.display = 'block';
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        async function drawRouteOnMap(routeIndices, color) {
+            // Map indices to coordinates
+            // 0 = Depot, 1..N = Bins (id = index-1), N+1 = Dump
+            const coords = routeIndices.map(idx => {
+                if (idx === 0) return depotCoords;
+                if (idx === bins.length + 1) return dumpCoords;
+                const b = bins.find(bin => bin.id === (idx - 1));
+                return {lat: b.lat, lng: b.lng};
+            });
+            
+            const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
+            const url = `http://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.code === 'Ok' && data.routes.length > 0) {
+                    const geojson = data.routes[0].geometry;
+                    const routeLayer = L.geoJSON(geojson, {
+                        style: {
+                            color: color,
+                            weight: 5,
+                            opacity: 0.7,
+                            dashArray: '10, 10'
+                        }
+                    }).addTo(map);
+                    routeLayers.push(routeLayer);
+                    
+                    // Fit map bounds to the route
+                    map.fitBounds(routeLayer.getBounds(), {padding: [50, 50]});
+                }
+            } catch (e) {
+                console.error("Failed to fetch route geometry from OSRM", e);
+            }
+        }
+
+        function displayResults(result) {
+            const resultsPanel = document.getElementById('resultsPanel');
+            const metricsDisplay = document.getElementById('metricsDisplay');
+            const routeDisplay = document.getElementById('routeDisplay');
+            const binListDisplay = document.getElementById('binListDisplay');
+            
+            resultsPanel.style.display = 'block';
+            
+            if (result.mode === 'single_truck') {
+                const selectedBinIds = result.selected_bins.map(b => b.id);
+                renderMap(selectedBinIds);
+                
+                // Draw Route on Map
+                drawRouteOnMap(result.route, '#4F46E5');
+                
+                metricsDisplay.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-label">Truck Capacity</div>
+                        <div class="metric-value">${document.getElementById('truckCapacity').value} kg</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Collected</div>
+                        <div class="metric-value">${result.total_weight} kg</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Capacity Utilization</div>
+                        <div class="metric-value">${result.capacity_utilization}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Distance (OSRM)</div>
+                        <div class="metric-value">${result.total_distance} km</div>
+                    </div>
+                `;
+                
+                const routeSteps = result.route.map(node => {
+                    if (node === 0) return 'Truck/Depot';
+                    if (node === bins.length + 1) return 'Dump Site';
+                    return `Bin ${node - 1}`;
+                });
+                
+                routeDisplay.innerHTML = `
+                    <div>
+                        ${routeSteps.map((step, i) => 
+                            `<span class="route-step">${step}</span>${i < routeSteps.length - 1 ? '<span class="route-arrow">→</span>' : ''}`
+                        ).join('')}
+                    </div>
+                `;
+                
+                binListDisplay.innerHTML = `
+                    <div style="font-size: 14px; color: #4B5563; margin-bottom: 8px;">
+                        <strong>Action taken:</strong> Selected ${result.selected_bins.length} bins. Skipped ${result.skipped_bins.length} bins.
+                    </div>
+                `;
+                
+            } else {
+                // Multi truck
+                const colors = ['#4F46E5', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
+                
+                let allSelectedIds = [];
+                result.results.forEach(truck => {
+                    allSelectedIds.push(...truck.selected_bins.map(b => b.id));
+                });
+                renderMap(allSelectedIds);
+                
+                metricsDisplay.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-label">Trucks Utilized</div>
+                        <div class="metric-value">${result.total_trucks_used}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Collected</div>
+                        <div class="metric-value">${result.total_weight} kg</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Distance (OSRM)</div>
+                        <div class="metric-value">${result.total_distance} km</div>
+                    </div>
+                `;
+                
+                routeDisplay.innerHTML = '';
+                result.results.forEach((truck, index) => {
+                    const truckColor = colors[index % colors.length];
+                    
+                    // Draw Route on Map
+                    drawRouteOnMap(truck.route, truckColor);
+                    
+                    const routeSteps = truck.route.map(node => {
+                        if (node === 0) return 'Truck/Depot';
+                        if (node === bins.length + 1) return 'Dump Site';
+                        return `Bin ${node - 1}`;
+                    });
+                    
+                    routeDisplay.innerHTML += `
+                        <div style="margin-bottom: 16px; padding: 16px; background: #F9FAFB; border: 1px solid #E5E7EB; border-left: 4px solid ${truckColor}; border-radius: 8px;">
+                            <div style="font-weight: 600; margin-bottom: 8px; font-size: 15px;">Truck ${truck.truck_id} <span style="font-weight: 400; color: #6B7280; font-size: 13px; margin-left: 8px;">Loaded: ${truck.total_weight}kg | Dist: ${truck.total_distance}km</span></div>
+                            <div>
+                                ${routeSteps.map((step, i) => 
+                                    `<span class="route-step">${step}</span>${i < routeSteps.length - 1 ? '<span class="route-arrow">→</span>' : ''}`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                binListDisplay.innerHTML = '';
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const tabButtons = document.querySelectorAll('.tab');
+            if (tabId === 'map') tabButtons[0].classList.add('active');
+            if (tabId === 'distances') tabButtons[1].classList.add('active');
+            if (tabId === 'results') tabButtons[2].classList.add('active');
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            if (tabId === 'map') {
+                // Fix map rendering issue when switching tabs
+                setTimeout(() => { map.invalidateSize(); }, 100);
+            }
+        }
+    </script>
+</body>
+</html>

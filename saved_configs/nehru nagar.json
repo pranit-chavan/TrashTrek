@@ -1,0 +1,148 @@
+{
+  "name": "nehru nagar ",
+  "bins": [
+    {
+      "fill_level": 0,
+      "id": 0,
+      "weight": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "fill_level": 65,
+      "id": 1,
+      "weight": 65,
+      "x": 1,
+      "y": 0
+    },
+    {
+      "fill_level": 8,
+      "id": 2,
+      "weight": 8,
+      "x": 2,
+      "y": 0
+    },
+    {
+      "fill_level": 57,
+      "id": 3,
+      "weight": 58,
+      "x": 3,
+      "y": 0
+    },
+    {
+      "fill_level": 28,
+      "id": 4,
+      "weight": 28,
+      "x": 4,
+      "y": 0
+    },
+    {
+      "fill_level": 37,
+      "id": 5,
+      "weight": 37,
+      "x": 5,
+      "y": 0
+    },
+    {
+      "fill_level": 73,
+      "id": 6,
+      "weight": 73,
+      "x": 6,
+      "y": 0
+    },
+    {
+      "fill_level": 53,
+      "id": 7,
+      "weight": 53,
+      "x": 7,
+      "y": 0
+    },
+    {
+      "fill_level": 62,
+      "id": 8,
+      "weight": 62,
+      "x": 8,
+      "y": 0
+    },
+    {
+      "fill_level": 91,
+      "id": 9,
+      "weight": 91,
+      "x": 9,
+      "y": 0
+    },
+    {
+      "fill_level": 53,
+      "id": 10,
+      "weight": 53,
+      "x": 0,
+      "y": 1
+    },
+    {
+      "fill_level": 34,
+      "id": 11,
+      "weight": 34,
+      "x": 1,
+      "y": 1
+    },
+    {
+      "fill_level": 52,
+      "id": 12,
+      "weight": 52,
+      "x": 2,
+      "y": 1
+    },
+    {
+      "fill_level": 75,
+      "id": 13,
+      "weight": 75,
+      "x": 3,
+      "y": 1
+    },
+    {
+      "fill_level": 14,
+      "id": 14,
+      "weight": 14,
+      "x": 4,
+      "y": 1
+    },
+    {
+      "fill_level": 89,
+      "id": 15,
+      "weight": 89,
+      "x": 5,
+      "y": 1
+    },
+    {
+      "fill_level": 23,
+      "id": 16,
+      "weight": 23,
+      "x": 6,
+      "y": 1
+    },
+    {
+      "fill_level": 49,
+      "id": 17,
+      "weight": 49,
+      "x": 7,
+      "y": 1
+    },
+    {
+      "fill_level": 9,
+      "id": 18,
+      "weight": 9,
+      "x": 8,
+      "y": 1
+    },
+    {
+      "fill_level": 80,
+      "id": 19,
+      "weight": 80,
+      "x": 9,
+      "y": 1
+    }
+  ],
+  "truck_capacity": 500,
+  "num_trucks": 1,
+  "timestamp": "2026-03-18T08:09:10.980Z"
+}
